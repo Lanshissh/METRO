@@ -13,7 +13,7 @@ export default function TabLayout() {
 
   return (
     <Tabs
-      initialRouteName="admin" // 👈 This ensures Admin tab is opened first
+      initialRouteName="admin"
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
@@ -29,7 +29,7 @@ export default function TabLayout() {
         name="admin"
         options={{
           title: 'ADMIN',
-          tabBarIcon: ({ color }) => <Ionicons name="qr-code" size={20} color={color} />,
+          tabBarIcon: ({ color }) => <Ionicons name="person-circle" size={20} color={color} />,
         }}
       />
       <Tabs.Screen

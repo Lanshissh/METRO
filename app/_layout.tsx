@@ -36,7 +36,7 @@ export default function RootLayout() {
       <ScanHistoryProvider>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
           <RootLayoutNav />
-          <StatusBar style="auto" />
+          <StatusBar style="auto"/>
         </ThemeProvider>
       </ScanHistoryProvider>
     </AuthProvider>
