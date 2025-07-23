@@ -1,4 +1,3 @@
-// app/(tabs)/history.tsx
 import React from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { useScanHistory } from '../../contexts/ScanHistoryContext';
