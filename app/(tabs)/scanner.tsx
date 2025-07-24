@@ -1,7 +1,7 @@
 import { OnSuccessfulScanProps, QRCodeScanner } from '@masumdev/rn-qrcode-scanner';
-import React, { useState } from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
+import React, { useState } from 'react';
+import { Alert, Image, StyleSheet, Text, View } from 'react-native';
 import { useScanHistory } from '../../contexts/ScanHistoryContext';
 
 export default function ScannerScreen() {
@@ -41,6 +41,17 @@ export default function ScannerScreen() {
         core={{ onSuccessfulScan: handleScan }}
         permissionScreen={{}}
       />
+
+      {/* 🔷 Logo positioned between top buttons */}
+      <View style={styles.logoContainer}>
+        <Image
+          source={require('../../assets/images/logo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+      </View>
+
+      {/* 📣 Text Overlay */}
       <View style={styles.overlay}>
         <Text style={styles.overlayText}>Point your camera at a QR Code</Text>
       </View>
@@ -52,6 +63,19 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000',
+  },
+  logoContainer: {
+    position: 'absolute',
+    top: 40,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  logo: {
+    width: 100,
+    height: 100,
+    opacity: 0.9,
   },
   overlay: {
     position: 'absolute',

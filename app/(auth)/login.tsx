@@ -1,7 +1,23 @@
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useEffect } from 'react';
+import { Text, View } from 'react-native';
+
+export default function LoginScreen() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace('/(tabs)/scanner');
+  }, []);
+
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text>Bypassing login... redirecting</Text>
+    </View>
+  );
+}
+
+/* import React, { useState } from 'react';
 import {
-  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -13,23 +29,8 @@ import {
 } from 'react-native';
 
 export default function LoginScreen() {
-  const router = useRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-
-  const handleLogin = () => {
-    if (!username || !password) {
-      Alert.alert('Missing Fields', 'Please enter both username and password.');
-      return;
-    }
-
-    // TEMP NAVIGATION for UI purposes
-    if (username === 'admin2') {
-      router.replace('/(tabs)/scanner');
-    } else {
-      router.replace('/(tabs)/admin');
-    }
-  };
 
   return (
     <KeyboardAvoidingView
@@ -42,6 +43,7 @@ export default function LoginScreen() {
           style={styles.logo}
           resizeMode="contain"
         />
+
         <Text style={styles.title}>Login</Text>
 
         <TextInput
@@ -61,7 +63,7 @@ export default function LoginScreen() {
           secureTextEntry
         />
 
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+        <TouchableOpacity style={styles.button}>
           <Text style={styles.buttonText}>LOGIN</Text>
         </TouchableOpacity>
       </View>
@@ -70,17 +72,46 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fdfdfd', justifyContent: 'center' },
-  innerContainer: { paddingHorizontal: 24, alignItems: 'center' },
-  logo: { width: 200, height: 200, marginBottom: 24 },
-  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 32, color: '#333' },
+  container: {
+    flex: 1,
+    backgroundColor: '#fdfdfd',
+    justifyContent: 'center',
+  },
+  innerContainer: {
+    paddingHorizontal: 24,
+    alignItems: 'center',
+  },
+  logo: {
+    width: 200,
+    height: 200,
+    marginBottom: 24,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 32,
+    color: '#333',
+  },
   input: {
-    borderWidth: 1, borderColor: '#ccc', padding: 12, borderRadius: 8,
-    backgroundColor: '#fff', width: '100%', marginBottom: 16
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: '#fff',
+    width: '100%',
+    marginBottom: 16,
   },
   button: {
-    backgroundColor: '#007bff', paddingVertical: 14, borderRadius: 8,
-    width: '100%', alignItems: 'center'
+    backgroundColor: '#007bff',
+    paddingVertical: 14,
+    borderRadius: 8,
+    width: '100%',
+    alignItems: 'center',
   },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });
+ */

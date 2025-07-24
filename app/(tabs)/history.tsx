@@ -1,5 +1,5 @@
 import React from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Image, StyleSheet, Text, View } from 'react-native';
 import { useScanHistory } from '../../contexts/ScanHistoryContext';
 
 export default function HistoryScreen() {
@@ -7,7 +7,16 @@ export default function HistoryScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Scan History</Text>
+      {                           }
+      <View style={styles.header}>
+        <Image
+          source={require('../../assets/images/logo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+        <Text style={styles.title}>Scan History</Text>
+      </View>
+
       {scans.length === 0 ? (
         <Text style={styles.noHistory}>No scans yet.</Text>
       ) : (
@@ -15,13 +24,14 @@ export default function HistoryScreen() {
           data={scans}
           keyExtractor={(_, index) => index.toString()}
           renderItem={({ item }) => (
-            <View style={styles.item}>
+            <View style={styles.card}>
               <Text style={styles.data}>{item.data}</Text>
               <Text style={styles.timestamp}>
                 {new Date(item.timestamp).toLocaleString()}
               </Text>
             </View>
           )}
+          contentContainerStyle={{ paddingBottom: 20 }}
         />
       )}
     </View>
@@ -32,27 +42,48 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#fff',
+    backgroundColor: '#f9f9f9',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  logo: {
+    width: 80,
+    height: 80,
+    marginRight: 10,
   },
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 12,
+    color: '#333',
   },
   noHistory: {
     fontSize: 16,
-    color: 'gray',
+    color: '#888',
+    textAlign: 'center',
+    marginTop: 32,
   },
-  item: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-    paddingVertical: 10,
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 14,
+    marginBottom: 12,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
   },
   data: {
     fontSize: 16,
+    fontWeight: '500',
+    color: '#222',
   },
   timestamp: {
     fontSize: 12,
     color: '#666',
+    marginTop: 4,
   },
 });
