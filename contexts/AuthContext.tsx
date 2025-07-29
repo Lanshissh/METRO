@@ -1,90 +1,116 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
+import { jwtDecode } from 'jwt-decode';
 
-export type User = {
-  username: string;
-  password: string;
-  role: 'admin1' | 'admin2';
+type User = {
+  user_id: string;
+  user_level: 'admin' | 'scanner' | string;
+  user_fullname: string;
 };
 
-interface AuthContextType {
+type AuthContextType = {
+  user: User | null;
   isLoggedIn: boolean;
   loading: boolean;
-  login: (username: string, password: string) => Promise<boolean>;
+  login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  register: (username: string, password: string, role: 'admin1' | 'admin2') => Promise<boolean>;
-  deleteUser: (username: string) => Promise<void>;
-  users: User[];
-}
+};
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [users, setUsers] = useState<User[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
-    const initialize = async () => {
-      const storedUsers = await AsyncStorage.getItem('users');
-      if (storedUsers) {
-        setUsers(JSON.parse(storedUsers));
-      } else {
-        const defaultUser: User = { username: 'admin', password: '1234', role: 'admin1' };
-        await AsyncStorage.setItem('users', JSON.stringify([defaultUser]));
-        setUsers([defaultUser]);
+    const restoreSession = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        if (token) {
+          const decoded: any = jwtDecode(token);
+          setUser({
+            user_id: decoded.user_id,
+            user_level: decoded.user_level,
+            user_fullname: decoded.user_fullname,
+          });
+          setIsLoggedIn(true);
+        }
+      } catch (err) {
+        console.error('Failed to restore session:', err);
+      } finally {
+        setLoading(false);
       }
-
-      const loginStatus = await AsyncStorage.getItem('isLoggedIn');
-      setIsLoggedIn(loginStatus === 'true');
-      setLoading(false);
     };
-    initialize();
+
+    restoreSession();
   }, []);
 
-  const saveUsers = async (newUsers: User[]) => {
-    await AsyncStorage.setItem('users', JSON.stringify(newUsers));
-    setUsers(newUsers);
-  };
-
+  // Login function
   const login = async (username: string, password: string) => {
-    const match = users.find(u => u.username === username && u.password === password);
-    if (match) {
+    try {
+      const response = await fetch('http://localhost:3000/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: username, user_password: password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed');
+      }
+
+      const decoded: any = jwtDecode(data.token);
+
+      await AsyncStorage.setItem('token', data.token);
+
+      setUser({
+        user_id: decoded.user_id,
+        user_level: decoded.user_level,
+        user_fullname: decoded.user_fullname,
+      });
+
       setIsLoggedIn(true);
-      await AsyncStorage.setItem('isLoggedIn', 'true');
-      return true;
+
+      // Navigate based on role
+      if (decoded.user_level === 'admin') {
+        router.replace('/admin');
+      } else {
+        router.replace('/scanner');
+      }
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to login');
     }
-    return false;
   };
 
+  // Logout function
   const logout = async () => {
-    setIsLoggedIn(false);
-    await AsyncStorage.setItem('isLoggedIn', 'false');
-  };
-
-  const register = async (username: string, password: string, role: 'admin1' | 'admin2') => {
-    const exists = users.find(u => u.username === username);
-    if (exists) return false;
-
-    const newUsers = [...users, { username, password, role }];
-    await saveUsers(newUsers);
-    return true;
-  };
-
-  const deleteUser = async (username: string) => {
-    const newUsers = users.filter(u => u.username !== username);
-    await saveUsers(newUsers);
+    try {
+      await AsyncStorage.removeItem('token');
+      setUser(null);
+      setIsLoggedIn(false);
+      router.replace('/(auth)/login');
+    } catch (err) {
+      console.error('Logout error:', err);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, loading, login, logout, register, deleteUser, users }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoggedIn,
+        loading,
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
-  return ctx;
-};
+export const useAuth = () => useContext(AuthContext);

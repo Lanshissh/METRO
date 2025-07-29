@@ -1,22 +1,4 @@
-import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
-import { Text, View } from 'react-native';
-
-export default function LoginScreen() {
-  const router = useRouter();
-
-  useEffect(() => {
-    router.replace('/(tabs)/scanner');
-  }, []);
-
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Bypassing login... redirecting</Text>
-    </View>
-  );
-}
-
-/* import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Image,
   KeyboardAvoidingView,
@@ -26,11 +8,52 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Alert,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
+import { jwtDecode } from 'jwt-decode';
 
 export default function LoginScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const router = useRouter();
+
+  const handleLogin = async () => {
+    if (!username || !password) {
+      Alert.alert('Validation', 'Please fill in both fields.');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://192.168.200.196:3000/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: username, user_password: password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        Alert.alert('Login Failed', data.error || 'Something went wrong');
+        return;
+      }
+
+      await AsyncStorage.setItem('token', data.token);
+
+      const decoded: any = jwtDecode(data.token);
+      console.log('Decoded Token:', decoded);
+
+      if (decoded.user_level === 'admin') {
+        router.replace('/admin');
+      } else {
+        router.replace('/scanner');
+      }
+    } catch (err) {
+      console.error(err);
+      Alert.alert('Error', 'Failed to connect to server');
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -63,7 +86,7 @@ export default function LoginScreen() {
           secureTextEntry
         />
 
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity style={styles.button} onPress={handleLogin}>
           <Text style={styles.buttonText}>LOGIN</Text>
         </TouchableOpacity>
       </View>
@@ -114,4 +137,3 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
- */

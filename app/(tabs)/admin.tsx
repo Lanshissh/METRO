@@ -4,6 +4,7 @@ import * as Sharing from 'expo-sharing';
 import React, { useRef, useState } from 'react';
 import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
+import { useAuth } from '@/contexts/AuthContext'; // make sure you have this
 
 export default function AdminScreen() {
   const [text, setText] = useState('');
@@ -17,6 +18,7 @@ export default function AdminScreen() {
   const [users, setUsers] = useState<{ username: string; role: string }[]>([]);
 
   const qrRef = useRef<any>(null);
+  const { logout } = useAuth();
 
   const handleRegister = () => {
     if (!newUsername || !newPassword) {
@@ -61,10 +63,23 @@ export default function AdminScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.headerRow}>
-        <Image source={require('../../assets/images/logo.png')} style={styles.headerLogo} resizeMode="contain" />
-        <Text style={styles.heading}>Admin Dashboard</Text>
+        <View style={styles.headerLeft}>
+          <Image source={require('../../assets/images/logo.png')} style={styles.headerLogo} resizeMode="contain" />
+          <Text style={styles.heading}>Admin Dashboard</Text>
+        </View>
+        <TouchableOpacity
+          style={styles.logoutIcon}
+          onPress={() => {
+            Alert.alert('Log Out', 'Are you sure you want to log out?', [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Logout', style: 'destructive', onPress: logout },
+            ]);
+          }}
+        >
+          <Ionicons name="log-out-outline" size={24} color="red" />
+        </TouchableOpacity>
       </View>
-        
+
       {/* QR Generator */}
       <Pressable style={styles.dropdownHeader} onPress={() => setShowQR(!showQR)}>
         <Text style={styles.dropdownTitle}>QR Code Generator</Text>
@@ -151,8 +166,13 @@ const styles = StyleSheet.create({
   },
   headerRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   headerLogo: {
     width: 80,
@@ -162,6 +182,9 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 22,
     fontWeight: 'bold',
+  },
+  logoutIcon: {
+    padding: 6,
   },
   dropdownHeader: {
     flexDirection: 'row',
