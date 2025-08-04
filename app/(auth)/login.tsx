@@ -1,22 +1,5 @@
-import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
-import { Text, View } from 'react-native';
-
-export default function LoginScreen() {
-  const router = useRouter();
-
-  useEffect(() => {
-    router.replace('/(tabs)/scanner');
-  }, []);
-
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Bypassing login... redirecting</Text>
-    </View>
-  );
-}
-
-/* import React, { useState } from 'react';
+import React, { useState } from 'react';
+import { router } from 'expo-router';
 import {
   Image,
   KeyboardAvoidingView,
@@ -26,11 +9,48 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from 'react-native';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const API_URL = 'http://192.168.200.155:3000/auth/login';
 
 export default function LoginScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleLogin = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await axios.post(API_URL, {
+        user_id: username,
+        user_password: password,
+      });
+
+      const { token } = res.data;
+      await AsyncStorage.setItem('token', token);
+
+      // Navigate to the admin tab after successful login
+      router.replace('/(tabs)/admin');
+    } catch (err: any) {
+      // Log detailed error in Metro/Expo console
+      console.log('[LOGIN ERROR]', err, err?.response?.data);
+
+      if (err.response?.data?.error) {
+        setError(err.response.data.error);
+      } else if (err.message) {
+        setError('Network/server error: ' + err.message);
+      } else {
+        setError('Unknown error');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -63,8 +83,14 @@ export default function LoginScreen() {
           secureTextEntry
         />
 
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>LOGIN</Text>
+        {error ? <Text style={{ color: 'red', marginBottom: 12 }}>{error}</Text> : null}
+
+        <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>LOGIN</Text>
+          )}
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -114,4 +140,3 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
- */

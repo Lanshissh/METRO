@@ -4,6 +4,7 @@ import * as Sharing from 'expo-sharing';
 import React, { useRef, useState } from 'react';
 import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
+import { useRouter } from 'expo-router';
 
 export default function AdminScreen() {
   const [text, setText] = useState('');
@@ -17,6 +18,12 @@ export default function AdminScreen() {
   const [users, setUsers] = useState<{ username: string; role: string }[]>([]);
 
   const qrRef = useRef<any>(null);
+  const router = useRouter();
+
+  const handleLogout = () => {
+    // Add clearing of tokens/context here if needed
+    router.replace('/(auth)/login');
+  };
 
   const handleRegister = () => {
     if (!newUsername || !newPassword) {
@@ -63,6 +70,9 @@ export default function AdminScreen() {
       <View style={styles.headerRow}>
         <Image source={require('../../assets/images/logo.png')} style={styles.headerLogo} resizeMode="contain" />
         <Text style={styles.heading}>Admin Dashboard</Text>
+        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+          <Ionicons name="log-out-outline" size={24} color="#dc3545" />
+        </TouchableOpacity>
       </View>
         
       {/* QR Generator */}
@@ -162,6 +172,19 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 22,
     fontWeight: 'bold',
+  },
+  logoutBtn: {
+    marginLeft: 'auto',
+    padding: 8,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  logoutText: {
+    color: '#dc3545',
+    fontWeight: 'bold',
+    marginLeft: 4,
+    fontSize: 16,
   },
   dropdownHeader: {
     flexDirection: 'row',

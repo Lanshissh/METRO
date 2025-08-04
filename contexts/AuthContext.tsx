@@ -1,20 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-export type User = {
-  username: string;
-  password: string;
-  role: 'admin1' | 'admin2';
-};
-
 interface AuthContextType {
   isLoggedIn: boolean;
   loading: boolean;
-  login: (username: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
-  register: (username: string, password: string, role: 'admin1' | 'admin2') => Promise<boolean>;
-  deleteUser: (username: string) => Promise<void>;
-  users: User[];
+  // Optionally, add token if you want to use it in requests
+  token: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,62 +14,26 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [users, setUsers] = useState<User[]>([]);
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
     const initialize = async () => {
-      const storedUsers = await AsyncStorage.getItem('users');
-      if (storedUsers) {
-        setUsers(JSON.parse(storedUsers));
-      } else {
-        const defaultUser: User = { username: 'admin', password: '1234', role: 'admin1' };
-        await AsyncStorage.setItem('users', JSON.stringify([defaultUser]));
-        setUsers([defaultUser]);
-      }
-
-      const loginStatus = await AsyncStorage.getItem('isLoggedIn');
-      setIsLoggedIn(loginStatus === 'true');
+      const storedToken = await AsyncStorage.getItem('token');
+      setToken(storedToken);
+      setIsLoggedIn(!!storedToken);
       setLoading(false);
     };
     initialize();
   }, []);
 
-  const saveUsers = async (newUsers: User[]) => {
-    await AsyncStorage.setItem('users', JSON.stringify(newUsers));
-    setUsers(newUsers);
-  };
-
-  const login = async (username: string, password: string) => {
-    const match = users.find(u => u.username === username && u.password === password);
-    if (match) {
-      setIsLoggedIn(true);
-      await AsyncStorage.setItem('isLoggedIn', 'true');
-      return true;
-    }
-    return false;
-  };
-
   const logout = async () => {
     setIsLoggedIn(false);
-    await AsyncStorage.setItem('isLoggedIn', 'false');
-  };
-
-  const register = async (username: string, password: string, role: 'admin1' | 'admin2') => {
-    const exists = users.find(u => u.username === username);
-    if (exists) return false;
-
-    const newUsers = [...users, { username, password, role }];
-    await saveUsers(newUsers);
-    return true;
-  };
-
-  const deleteUser = async (username: string) => {
-    const newUsers = users.filter(u => u.username !== username);
-    await saveUsers(newUsers);
+    setToken(null);
+    await AsyncStorage.removeItem('token');
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, loading, login, logout, register, deleteUser, users }}>
+    <AuthContext.Provider value={{ isLoggedIn, loading, logout, token }}>
       {children}
     </AuthContext.Provider>
   );
